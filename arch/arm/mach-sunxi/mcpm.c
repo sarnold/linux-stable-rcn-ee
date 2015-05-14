@@ -58,8 +58,12 @@
 #define PRCM_PWR_SWITCH_REG(c, cpu)	(0x140 + 0x10 * (c) + 0x4 * (cpu))
 #define PRCM_CPU_SOFT_ENTRY_REG		0x164
 
+#define CPU0_SUPPORT_HOTPLUG_MAGIC0	0xFA50392F
+#define CPU0_SUPPORT_HOTPLUG_MAGIC1	0x790DCA3A
+
 static void __iomem *cpucfg_base;
 static void __iomem *prcm_base;
+static void __iomem *sram_b_smp_base;
 
 static int sunxi_cpu_power_switch_set(unsigned int cpu, unsigned int cluster,
 				      bool enable)
@@ -93,6 +97,17 @@ static int sunxi_cpu_power_switch_set(unsigned int cpu, unsigned int cluster,
 	return 0;
 }
 
+static void sunxi_cpu0_hotplug_support_set(bool enable)
+{
+	if (enable) {
+		writel(CPU0_SUPPORT_HOTPLUG_MAGIC0, sram_b_smp_base);
+		writel(CPU0_SUPPORT_HOTPLUG_MAGIC1, sram_b_smp_base + 0x4);
+	} else {
+		writel(0x0, sram_b_smp_base);
+		writel(0x0, sram_b_smp_base + 0x4);
+	}
+}
+
 static int sunxi_cpu_powerup(unsigned int cpu, unsigned int cluster)
 {
 	u32 reg;
@@ -100,6 +115,10 @@ static int sunxi_cpu_powerup(unsigned int cpu, unsigned int cluster)
 	pr_debug("%s: cpu %u cluster %u\n", __func__, cpu, cluster);
 	if (cpu >= SUNXI_CPUS_PER_CLUSTER || cluster >= SUNXI_NR_CLUSTERS)
 		return -EINVAL;
+
+	/* Set hotplug support magic flags for cpu0 */
+	if (cluster == 0 && cpu == 0)
+		sunxi_cpu0_hotplug_support_set(true);
 
 	/* assert processor power-on reset */
 	reg = readl(prcm_base + PRCM_CPU_PO_RST_CTRL(cluster));
@@ -438,6 +457,19 @@ static int __init sunxi_mcpm_init(void)
 	if (!prcm_base) {
 		pr_err("%s: failed to map PRCM registers\n", __func__);
 		iounmap(prcm_base);
+		return -ENOMEM;
+	}
+
+	node = of_find_compatible_node(NULL, NULL,
+			"allwinner,sun9i-smp-sram");
+	if (!node)
+		return -ENODEV;
+
+	sram_b_smp_base = of_iomap(node, 0);
+	of_node_put(node);
+	if (!sram_b_smp_base) {
+		pr_err("%s: failed to map secure SRAM\n", __func__);
+		iounmap(sram_b_smp_base);
 		return -ENOMEM;
 	}
 
