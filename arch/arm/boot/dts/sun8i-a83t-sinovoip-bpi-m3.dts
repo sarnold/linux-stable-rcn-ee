@@ -1,0 +1,210 @@
+/*
+ * Copyright 2016 Vishnu Patekar
+ * Vishnu Patekar <vishnupatekar0510@gmail.com>
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPL or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This file is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This file is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/dts-v1/;
+#include "sun8i-a83t.dtsi"
+#include "sunxi-common-regulators.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pinctrl/sun4i-a10.h>
+
+/ {
+	model = "Sinovoip BananaPi M3 v1.2";
+	compatible = "sinovoip,bpi-m3", "allwinner,sun8i-a83t";
+
+	aliases {
+		serial0 = &uart0;
+		lcd1 = &lcd1;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	mmc1_pwrseq: mmc1_pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		pinctrl-names = "default";
+		pinctrl-0 = <&mmc1_pwrseq_pin_bpi_m3>;
+//fixme
+		reset-gpios = <&r_pio 0 2 GPIO_ACTIVE_LOW>; /* PL2 WIFI_EN */
+	};
+};
+
+&ccu {
+	/* force some rates */
+	assigned-clocks = <&ccu CLK_PLL_PERIPH>,
+			<&ccu CLK_PLL_VE>,
+			<&ccu CLK_PLL_GPU>,
+			<&ccu CLK_PLL_HSIC>,
+			<&ccu CLK_PLL_VIDEO1>;
+	assigned-clock-rates =	<600000000>,	// pll_periph
+				<432000000>,	// pll_ve
+				<432000000>,	// pll_gpu
+				<480000000>,	// pll_hsic
+				<118800000>;	// pll_video1
+};
+
+&ehci0 {
+	/* Terminus Tech FE 1.1s 4-port USB 2.0 hub here */
+	status = "okay";
+
+	/* TODO GL830 USB-to-SATA bridge downstream w/ GPIO power controls */
+};
+
+&mmc0 {						// SD card
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
+	vmmc-supply = <&reg_vcc3v3>;
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_HIGH>; /* PF6 */
+	bus-width = <4>;
+	cd-inverted;
+	status = "okay";
+};
+
+// copy from Bananapi M2+ (wens)
+&mmc1 {						// wifi/BT
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc1_pins_a>;
+//fixme: no power/regulator, but needed in the mmc driver
+	vmmc-supply = <&reg_vcc3v3>;
+	mmc-pwrseq = <&mmc1_pwrseq>;
+//fixme: live: bus width = 3 (8 bits)
+//fixme: .fex:
+// wl_reg_on PL2 1
+// wl_host_wake PL3 4
+	bus-width = <4>;
+	non-removable;
+//fixme: added 16-06-23
+	enable-wakeup;
+	status = "okay";
+
+	brcmf: bcrmf@1 {
+		reg = <1>;
+		compatible = "brcm,bcm4329-fmac";
+		interrupt-parent = <&r_pio>;
+//fixme: live: irq 3 (absolute) - doc hard wake-ap = PL3
+		interrupts = <0 3 IRQ_TYPE_LEVEL_LOW>; /* PL3 */
+		interrupt-names = "host-wake";
+	};
+};
+
+&mmc2 {					// eMMC
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_8bit_pins>;
+	vmmc-supply = <&reg_vcc3v3>;
+	vqmmc-supply = <&reg_vcc3v3>;
+	bus-width = <8>;
+	non-removable;
+//wens - not added - back 16-06-13
+	cap-mmc-hw-reset;
+//	mmc-ddr-1_8v;		set by default
+	status = "okay";
+};
+
+&r_pio {
+	mmc1_pwrseq_pin_bpi_m3: mmc1_pwrseq_pin@0 {
+		allwinner,pins = "PL2";
+		allwinner,function = "gpio_out";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+	};
+};
+
+&r_rsb {
+	status = "okay";
+};
+
+&ir {
+	status = "okay";
+};
+
+&reg_usb1_vbus {
+	gpio = <&pio 3 24 GPIO_ACTIVE_HIGH>; /* PD24 */
+	status = "okay";
+};
+
+&reg_vcc3v0 {
+	status = "disabled";
+};
+
+&reg_vcc5v0 {
+	status = "disabled";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins_b>;
+	status = "okay";
+};
+
+&usbphy {
+	usb1_vbus-supply = <&reg_usb1_vbus>;
+	status = "okay";
+};
+
+&usb_otg {
+	/* VBUS detection/drive support in PMIC required for OTG */
+	dr_mode = "host";
+	status = "okay";
+};
+
+&usb1_vbus_pin_a {
+	allwinner,pins = "PD24";
+};
+
+&de {
+	status = "okay";
+};
+
+&lcd1 {
+	status = "okay";
+};
+
+&hdmi {
+	status = "okay";
+};
+
+&i2s2 {
+	status = "okay";
+};

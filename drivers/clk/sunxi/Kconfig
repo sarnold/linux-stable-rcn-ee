@@ -1,0 +1,6 @@
+config CLK_SUN8I_APB0
+	def_bool MACH_SUN9I || MACH_SUN8I
+ 
+config CLK_SUN9I_CPUS
+	def_bool MACH_SUN9I || MACH_SUN8I
+
