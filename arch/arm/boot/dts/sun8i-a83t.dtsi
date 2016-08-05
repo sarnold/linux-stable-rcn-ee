@@ -45,9 +45,10 @@
 
 #include "skeleton.dtsi"
 
+#include <dt-bindings/clock/sun8i-a83t.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
-
 #include <dt-bindings/pinctrl/sun4i-a10.h>
+#include <dt-bindings/reset/sun8i-a83t.h>
 
 / {
 	interrupt-parent = <&gic>;
@@ -55,53 +56,98 @@
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
+		enable-method = "allwinner,sun6i-a31";
 
-		cpu@0 {
+		cpu0: cpu@0 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <0>;
+			clocks = <&cpus>;
+			clock-latency = <244144>; /* 8 32k periods */
+			operating-points = <
+				/* kHz    uV */
+				1200000 1400000
+				1008000 1400000
+				912000	1400000
+				864000  1350000
+				720000  1250000
+				528000  1150000
+				432000	1100000
+				>;
+			#cooling-cells = <2>;
+			cooling-min-level = <0>;
+			cooling-max-level = <3>;
 		};
 
-		cpu@1 {
+		cpu1: cpu@1 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <1>;
+			clocks = <&cpus>;
 		};
 
-		cpu@2 {
+		cpu2: cpu@2 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <2>;
+			clocks = <&cpus>;
 		};
 
-		cpu@3 {
+		cpu3: cpu@3 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <3>;
+			clocks = <&cpus>;
 		};
 
-		cpu@100 {
+		cpu4: cpu@100 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <0x100>;
+			clocks = <&cpus>;
+			clock-latency = <244144>; /* 8 32k periods */
+			operating-points = <
+				/* kHz    uV */
+				1200000 1400000
+				1008000 1400000
+				912000	1400000
+				864000  1350000
+				720000  1250000
+				528000  1150000
+				432000	1100000
+				>;
+			#cooling-cells = <2>;
+			cooling-min-level = <0>;
+			cooling-max-level = <3>;
 		};
 
-		cpu@101 {
+		cpu5: cpu@101 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <0x101>;
+			clocks = <&cpus>;
 		};
 
-		cpu@102 {
+		cpu6: cpu@102 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <0x102>;
+			clocks = <&cpus>;
 		};
 
-		cpu@103 {
+		cpu7: cpu@103 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <0x103>;
+			clocks = <&cpus>;
+		};
+	};
+
+	thermal-zones {
+		cpu_thermal: cpu_thermal {
+			polling-delay-passive = <1000>;
+			polling-delay = <5000>;
+			thermal-sensors = <&ths 0>;
 		};
 	};
 
@@ -111,6 +157,8 @@
 			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>;
+		clock-frequency = <24000000>;
+		arm,cpu-registers-not-fw-configured;
 	};
 
 	clocks {
@@ -138,13 +186,62 @@
 			clock-output-names = "osc16M";
 		};
 
-		osc16Md512: osc16Md512_clk {
+//		osc16Md512: osc16Md512_clk {
+		osc32k: osc32k_clk {
 			#clock-cells = <0>;
 			compatible = "fixed-factor-clock";
 			clock-div = <512>;
 			clock-mult = <1>;
 			clocks = <&osc16M>;
-			clock-output-names = "osc16M-d512";
+//			clock-output-names = "osc16M-d512";
+			clock-output-names = "osc32k";
+		};
+
+		cpus: clk@01f01400 {
+			compatible = "allwinner,sun9i-a80-cpus-clk";
+			reg = <0x01f01400 0x4>;
+			#clock-cells = <0>;
+			clocks = <&osc32k>, <&osc24M>,
+			         <&ccu CLK_PLL_PERIPH>, <&osc16M>;
+			clock-output-names = "cpus";
+		};
+
+		ahb0: ahb0_clk {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clock-div = <1>;
+			clock-mult = <1>;
+			clocks = <&cpus>;
+			clock-output-names = "ahb0";
+		};
+
+		apb0: clk@01f0140c {
+			compatible = "allwinner,sun8i-a23-apb0-clk";
+			reg = <0x01f0140c 0x4>;
+			#clock-cells = <0>;
+			clocks = <&ahb0>;
+			clock-output-names = "apb0";
+		};
+
+		apb0_gates: clk@01f01428 {
+			compatible = "allwinner,sun8i-a83t-apb0-gates-clk";
+			reg = <0x01f01428 0x4>;
+			#clock-cells = <1>;
+			clocks = <&apb0>;
+			clock-indices = <0>, <1>,
+					<2>, <3>,
+					<4>, <6>, <7>;
+			clock-output-names = "apb0_pio", "apb0_ir",
+					"apb0_timer", "apb0_rsb",
+					"apb0_uart", "apb0_i2c0", "apb0_twd";
+		};
+
+		ir_clk: ir_clk@01f01454 {
+			compatible = "allwinner,sun4i-a10-mod0-clk";
+			reg = <0x01f01454 0x4>;
+			#clock-cells = <0>;
+			clocks = <&osc32k>, <&osc24M>;
+			clock-output-names = "ir";
 		};
 	};
 
@@ -154,23 +251,234 @@
 		#size-cells = <1>;
 		ranges;
 
+		de: de-controller@01000000 {
+			compatible = "allwinner,sun8i-a83t-display-engine";
+			reg = <0x01000000 0x400000>;
+			clocks = <&ccu CLK_PLL_DE>;
+			clock-names = "clock";
+//			resets = <&ccu RST_DE>;
+			ports = <&lcd1_p>;
+			status = "disabled";
+		};
+
+		dma: dma-controller@01c02000 {
+			compatible = "allwinner,sun8i-a83t-dma";
+			reg = <0x01c02000 0x1000>;
+			interrupts = <GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_DMA>;
+			resets = <&ccu RST_DMA>;
+			#dma-cells = <1>;
+		};
+
+		lcd1: lcd-controller@01c0d000 {
+			compatible = "allwinner,sun8i-h3-lcd";
+			reg = <0x01c0d000 0x400>;
+			clocks = <&ccu CLK_TCON1>;
+			clock-names = "clock";
+//			resets = <&ccu RST_TCON1>;
+			interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			lcd1_p: port {
+				lcd1_ep: endpoint {
+					remote-endpoint = <&hdmi_ep>;
+				};
+			};
+		};
+
+		mmc0: mmc@01c0f000 {			// SD card
+			compatible = "allwinner,sun8i-a83t-mmc";
+			reg = <0x01c0f000 0x1000>;
+			clocks = <&ccu CLK_BUS_MMC0>,
+				 <&ccu CLK_MMC0>,
+				 <&ccu CLK_MMC0_OUTPUT>,
+				 <&ccu CLK_MMC0_SAMPLE>;
+			clock-names = "ahb",
+				      "mmc",
+				      "output",
+				      "sample";
+			//reset by bus-gate
+			interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		mmc1: mmc@01c10000 {			// Wifi/BT
+			compatible = "allwinner,sun8i-a83t-mmc";
+			reg = <0x01c10000 0x1000>;
+			clocks = <&ccu CLK_BUS_MMC1>,
+				 <&ccu CLK_MMC1>,
+				 <&ccu CLK_MMC1_OUTPUT>,
+				 <&ccu CLK_MMC1_SAMPLE>;
+			clock-names = "ahb",
+				      "mmc",
+				      "output",
+				      "sample";
+			interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		mmc2: mmc@01c11000 {			// eMMC
+			compatible = "allwinner,sun8i-a83t-mmc";
+			reg = <0x01c11000 0x1000>;
+			clocks = <&ccu CLK_BUS_MMC2>,
+				 <&ccu CLK_MMC2>,
+				 <&ccu CLK_MMC2_OUTPUT>,
+				 <&ccu CLK_MMC2_SAMPLE>;
+			clock-names = "ahb",
+				      "mmc",
+				      "output",
+				      "sample";
+			interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		sid: eeprom@01c14000 {
+			compatible = "allwinner,sun4i-a10-sid";
+			reg = <0x01c14000 0x400>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+//useless if not android ?
+//			ths_calibration: calib@234 {
+//				reg = <0x234 0x8>;
+//			};
+		};
+
+		usb_otg: usb@01c19000 {
+			compatible = "allwinner,sun8i-a33-musb";
+			reg = <0x01c19000 0x0400>;
+			clocks = <&ccu CLK_BUS_USBDRD>;
+			resets = <&ccu RST_USBDRD>;
+			interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "mc";
+			phys = <&usbphy 0>;
+			phy-names = "usb";
+			extcon = <&usbphy 0>;
+			status = "disabled";
+		};
+
+		usbphy: phy@01c19400 {
+			compatible = "allwinner,sun8i-a83t-usb-phy";
+			reg = <0x01c19400 0x10>,
+			      <0x01c1a800 0x4>,
+			      <0x01c1b800 0x4>;
+			reg-names = "phy_ctrl",
+				    "pmu1",
+				    "pmu2";
+			clocks = <&ccu CLK_USB_PHY0>,
+				 <&ccu CLK_USB_PHY1>,
+				 <&ccu CLK_USB_HSIC>;
+			clock-names = "usb0_phy",
+				      "usb1_phy",
+				      "usb2_phy";
+			resets = <&ccu RST_USB_PHY0>,
+				 <&ccu RST_USB_PHY1>,
+				 <&ccu RST_USB_HSIC>;
+			reset-names = "usb0_reset",
+				      "usb1_reset",
+				      "usb2_reset";
+			status = "disabled";
+			#phy-cells = <1>;
+		};
+
+		ehci0: usb@01c1a000 {
+			compatible = "allwinner,sun8i-a83t-ehci", "generic-ehci";
+			reg = <0x01c1a000 0x100>;
+			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_EHCI0>;
+			resets = <&ccu RST_EHCI0>;
+			phys = <&usbphy 1>;
+			phy-names = "usb";
+			status = "disabled";
+		};
+
+		ohci0: usb@01c1a400 {
+			compatible = "allwinner,sun8i-a83t-ohci", "generic-ohci";
+			reg = <0x01c1a400 0x100>;
+			interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_OHCI0>, <&ccu CLK_OHCI0>;
+			resets = <&ccu RST_OHCI0>;
+			phys = <&usbphy 1>;
+			phy-names = "usb";
+			status = "disabled";
+		};
+
+		ehci1: usb@01c1b000 {
+			compatible = "allwinner,sun8i-a83t-ehci", "generic-ehci";
+			reg = <0x01c1b000 0x100>;
+			interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_EHCI1>, <&ccu CLK_OSC12M>;
+			resets = <&ccu RST_EHCI1>;
+			phys = <&usbphy 2>;
+			phy-names = "usb";
+			status = "disabled";
+		};
+
+		ccu: clock@01c20000 {
+			compatible = "allwinner,sun8i-a83t-ccu";
+			reg = <0x01c20000 0x400>;
+			clocks = <&osc24M>, <&osc32k>;
+			clock-names = "hosc", "losc";
+			// specific clock rates set in child dts
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+		};
+
 		pio: pinctrl@01c20800 {
 			compatible = "allwinner,sun8i-a83t-pinctrl";
 			interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>,
 				     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
 				     <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
 			reg = <0x01c20800 0x400>;
-			clocks = <&osc24M>;
+			clocks = <&ccu CLK_BUS_PIO>;
 			gpio-controller;
 			interrupt-controller;
 			#interrupt-cells = <3>;
 			#gpio-cells = <3>;
+
+			hdmi_pins_a: hdmi@0 {
+				allwinner,pins = "PH6", "PH7", "PH8";
+				allwinner,function = "hdmi";
+//				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
 
 			mmc0_pins_a: mmc0@0 {
 				allwinner,pins = "PF0", "PF1", "PF2",
 						 "PF3", "PF4", "PF5";
 				allwinner,function = "mmc0";
 				allwinner,drive = <SUN4I_PINCTRL_30_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
+			mmc0_cd_pin: mmc0_cd_pin@0 {
+				allwinner,pins = "PF6";
+				allwinner,function = "gpio_in";
+				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
+			};
+
+			mmc1_pins_a: mmc1@0 {
+				allwinner,pins = "PG0", "PG1", "PG2",
+						 "PG3", "PG4", "PG5";
+				allwinner,function = "mmc1";
+				allwinner,drive = <SUN4I_PINCTRL_30_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
+			mmc2_8bit_pins: mmc2_8bit {
+				allwinner,pins = "PC5", "PC6", "PC8",
+						 "PC9", "PC10", "PC11",
+						 "PC12", "PC13", "PC14",
+						 "PC15", "PC16";
+				allwinner,function = "mmc2";
+				allwinner,drive = <SUN4I_PINCTRL_40_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 			};
 
@@ -197,11 +505,21 @@
 			clocks = <&osc24M>;
 		};
 
-		watchdog@01c20ca0 {
+		wdt0: watchdog@01c20c00 {
 			compatible = "allwinner,sun6i-a31-wdt";
-			reg = <0x01c20ca0 0x20>;
+			reg = <0x01c20c00 0x20>;
 			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&osc24M>;
+		};
+
+		i2s2: i2s@1c22800 {
+			compatible = "allwinner,sun8i-h3-hdmi-audio";
+			reg = <0x01c22800 0x400>;
+			clocks = <&ccu CLK_PLL_AUDIO>, <&ccu CLK_DAUDIO2>;
+			clock-names = "clock", "i2s2";
+//			resets = <&ccu RST_DAUDIO2>;
+			dmas = <&dma 27>;
+			dma-names = "tx";
+			status = "disabled";
 		};
 
 		uart0: serial@01c28000 {
@@ -210,7 +528,24 @@
 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
-			clocks = <&osc24M>;
+			clocks = <&ccu CLK_BUS_UART0>;
+			resets = <&ccu RST_UART0>;
+			dmas = <&dma 6>, <&dma 6>;
+			dma-names = "rx", "tx";
+			status = "disabled";
+		};
+//fixme: more uart 1..4
+
+		uart1: serial@01c28400 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x01c28400 0x400>;
+			interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			clocks = <&ccu CLK_BUS_UART1>;
+			resets = <&ccu RST_UART1>;
+			dmas = <&dma 7>, <&dma 7>;
+			dma-names = "rx", "tx";
 			status = "disabled";
 		};
 
@@ -223,6 +558,106 @@
 			interrupt-controller;
 			#interrupt-cells = <3>;
 			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_HIGH)>;
+		};
+
+		hdmi: hdmi@01ee0000 {
+			compatible = "allwinner,sun8i-a83t-hdmi";
+			reg = <0x01ee0000 0x20000>;
+			clocks = <&ccu CLK_HDMI>, <&ccu CLK_HDMI_DDC>;
+			clock-names = "clock", "ddc-clock";
+			resets = <&ccu RST_HDMI0>, <&ccu RST_HDMI1>;
+			reset-names = "hdmi0", "hdmi1";
+			pinctrl-names = "default";
+			pinctrl-0 = <&hdmi_pins_a>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			port {
+				hdmi_ep: endpoint {
+					remote-endpoint = <&lcd1_ep>;
+				};
+			};
+		};
+
+		rtc: rtc@01f00000 {
+			compatible = "allwinner,sun6i-a31-rtc";
+			reg = <0x01f00000 0x54>;
+			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
+			             <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		apb0_reset: reset@01f014b0 {
+			reg = <0x01f014b0 0x4>;
+			compatible = "allwinner,sun6i-a31-clock-reset";
+			#reset-cells = <1>;
+		};
+
+		cpucfg@01f01c00 {
+			compatible = "allwinner,sun6i-a31-cpuconfig";
+			reg = <0x01f01c00 0x300>;
+		};
+
+		ir: ir@01f02000 {
+			compatible = "allwinner,sun5i-a13-ir";
+			reg = <0x01f02000 0x400>;
+			interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&apb0_gates 1>, <&ir_clk>;
+			clock-names = "apb", "ir";
+			resets = <&apb0_reset 1>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&ir_pins_a>;
+			status = "disabled";
+		};
+
+		r_pio: pinctrl@01f02c00 {
+			compatible = "allwinner,sun8i-a83t-r-pinctrl";
+			reg = <0x01f02c00 0x400>;
+			interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&apb0_gates 0>;
+			resets = <&apb0_reset 0>;
+			gpio-controller;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			#gpio-cells = <3>;
+
+			ir_pins_a: ir@0 {
+				allwinner,pins = "PL12";
+				allwinner,function = "s_cir";
+				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
+			r_rsb_pins: r_rsb {
+				allwinner,pins = "PL0", "PL1";
+				allwinner,function = "s_rsb";
+				allwinner,drive = <SUN4I_PINCTRL_20_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
+			};
+		};
+
+		r_rsb: i2c@01f03400 {
+			compatible = "allwinner,sun8i-a23-rsb";
+			reg = <0x01f03400 0x400>;
+			interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&apb0_gates 3>;
+			clock-frequency = <3000000>;
+			resets = <&apb0_reset 3>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&r_rsb_pins>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		ths: ths@01f04000 {
+			#thermal-sensor-cells = <0>;
+			compatible = "allwinner,sun8i-a83t-ths";
+			reg = <0x01f04000 0x8c>;
+//fixme: irq 31 in H3 - irq removed for a83t in drivers/thermal/sun8i_ths.c
+//			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+//useless if not android ?
+//			nvmem-cells = <&ths_calibration>;
+//			nvmem-cell-names = "calibration";
 		};
 	};
 };

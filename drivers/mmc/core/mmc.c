@@ -203,6 +203,8 @@ static void mmc_select_card_type(struct mmc_card *card)
 	    card_type & EXT_CSD_CARD_TYPE_DDR_1_8V) {
 		hs_max_dtr = MMC_HIGH_DDR_MAX_DTR;
 		avail_type |= EXT_CSD_CARD_TYPE_DDR_1_8V;
+//test
+pr_info("*jfm* ddr 1.8V\n");
 	}
 
 	if (caps & MMC_CAP_1_2V_DDR &&
@@ -855,6 +857,8 @@ static int mmc_select_powerclass(struct mmc_card *card)
 		return 0;
 
 	ddr = card->mmc_avail_type & EXT_CSD_CARD_TYPE_DDR_52;
+//test
+pr_info("*jfm* ddr type ddr 52: %d\n", ddr != 0);
 	if (ddr)
 		ext_csd_bits = (bus_width == MMC_BUS_WIDTH_8) ?
 			EXT_CSD_DDR_BUS_WIDTH_8 : EXT_CSD_DDR_BUS_WIDTH_4;
@@ -1043,6 +1047,8 @@ static int mmc_select_hs_ddr(struct mmc_card *card)
 
 	if (!err)
 		mmc_set_timing(host, MMC_TIMING_MMC_DDR52);
+//test
+pr_info("*jfm* ddr timing ddr52: %d\n", !err);
 
 	return err;
 }

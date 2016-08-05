@@ -218,8 +218,8 @@
 #define SDXC_CLK_50M_DDR_8BIT	4
 
 struct sunxi_mmc_clk_delay {
-	u32 output;
-	u32 sample;
+	u16 output;
+	u16 sample;
 };
 
 struct sunxi_idma_des {
@@ -660,14 +660,25 @@ static int sunxi_mmc_clk_set_rate(struct sunxi_mmc_host *host,
 	u32 clock = ios->clock;
 	int ret;
 
+//test
+dev_info(mmc_dev(host->mmc), "*jfm* set_rate width:%d timing: %d\n",
+ ios->bus_width, ios->timing);
 	/* 8 bit DDR requires a higher module clock */
 	if (ios->timing == MMC_TIMING_MMC_DDR52 &&
 	    ios->bus_width == MMC_BUS_WIDTH_8)
 		clock <<= 1;
 
 	rate = clk_round_rate(host->clk_mmc, clock);
+//jfm bug
+	if (rate < 0) {
+		dev_err(mmc_dev(host->mmc), "error rounding clk to %d: %d\n",
+			clock, rate);
+		return rate;
+	}
 	dev_dbg(mmc_dev(host->mmc), "setting clk to %d, rounded %d\n",
 		clock, rate);
+//test
+dev_info(mmc_dev(host->mmc), "*jfm* set %d, rounded %d\n", clock, rate);
 
 	/* setting clock rate */
 	ret = clk_set_rate(host->clk_mmc, rate);
@@ -711,6 +722,10 @@ static int sunxi_mmc_clk_set_rate(struct sunxi_mmc_host *host,
 			oclk_dly = host->clk_delays[SDXC_CLK_50M_DDR].output;
 			sclk_dly = host->clk_delays[SDXC_CLK_50M_DDR].sample;
 		}
+	} else if (ios->timing == MMC_TIMING_MMC_DDR52 &&
+		 ios->bus_width == MMC_BUS_WIDTH_8) {
+		oclk_dly = host->clk_delays[SDXC_CLK_50M_DDR_8BIT].output;
+		sclk_dly = host->clk_delays[SDXC_CLK_50M_DDR_8BIT].sample;
 	} else {
 		return -EINVAL;
 	}
@@ -941,6 +956,7 @@ static int sunxi_mmc_card_busy(struct mmc_host *mmc)
 static const struct of_device_id sunxi_mmc_of_match[] = {
 	{ .compatible = "allwinner,sun4i-a10-mmc", },
 	{ .compatible = "allwinner,sun5i-a13-mmc", },
+	{ .compatible = "allwinner,sun8i-a83t-mmc", },
 	{ .compatible = "allwinner,sun9i-a80-mmc", },
 	{ /* sentinel */ }
 };
@@ -966,6 +982,14 @@ static const struct sunxi_mmc_clk_delay sunxi_mmc_clk_delays[] = {
 	[SDXC_CLK_50M_DDR_8BIT]	= { .output =  90, .sample = 180 },
 };
 
+static const struct sunxi_mmc_clk_delay sun8i_a83t_mmc_clk_delays[] = {
+	[SDXC_CLK_400K]		= { .output = 180, .sample = 180 },
+	[SDXC_CLK_25M]		= { .output = 180, .sample =  75 },
+	[SDXC_CLK_50M]		= { .output =  90, .sample = 105 },
+	[SDXC_CLK_50M_DDR]	= { .output =  60, .sample = 120 },
+	[SDXC_CLK_50M_DDR_8BIT]	= { .output =  180, .sample = 180 },
+};
+
 static const struct sunxi_mmc_clk_delay sun9i_mmc_clk_delays[] = {
 	[SDXC_CLK_400K]		= { .output = 180, .sample = 180 },
 	[SDXC_CLK_25M]		= { .output = 180, .sample =  75 },
@@ -987,6 +1011,8 @@ static int sunxi_mmc_resource_request(struct sunxi_mmc_host *host,
 
 	if (of_device_is_compatible(np, "allwinner,sun9i-a80-mmc"))
 		host->clk_delays = sun9i_mmc_clk_delays;
+	else if (of_device_is_compatible(np, "allwinner,sun8i-a83t-mmc"))
+		host->clk_delays = sun8i_a83t_mmc_clk_delays;
 	else
 		host->clk_delays = sunxi_mmc_clk_delays;
 

@@ -11,6 +11,7 @@
  * for more details.
  */
 
+#include <linux/clk.h>
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
 #include <linux/export.h>
@@ -100,8 +101,8 @@ static void __init parse_dt_topology(void)
 				 GFP_NOWAIT);
 
 	for_each_possible_cpu(cpu) {
-		const u32 *rate;
-		int len;
+		struct clk *clk;
+		u32 rate = 0;
 
 		/* too early to use cpu->of_node */
 		cn = of_get_cpu_node(cpu, NULL);
@@ -117,14 +118,23 @@ static void __init parse_dt_topology(void)
 		if (cpu_eff->compatible == NULL)
 			continue;
 
-		rate = of_get_property(cn, "clock-frequency", &len);
-		if (!rate || len != 4) {
-			pr_err("%s missing clock-frequency property\n",
-				cn->full_name);
+		clk = of_clk_get(cn, 0);
+		if (!IS_ERR(clk)) {
+			rate = clk_get_rate(clk);
+		} else {
+			if (of_property_read_u32(cn, "clock-frequency", &rate)) {
+				pr_err("%s missing clocks or clock-frequency properties\n",
+				       cn->full_name);
+				continue;
+			}
+		}
+
+		if (!rate) {
+			pr_err("%s invalid CPU frequency", cn->full_name);
 			continue;
 		}
 
-		capacity = ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
+		capacity = ((rate) >> 20) * cpu_eff->efficiency;
 
 		/* Save min capacity of the system */
 		if (capacity < min_capacity)

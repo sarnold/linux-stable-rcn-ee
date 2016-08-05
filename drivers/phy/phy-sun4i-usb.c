@@ -83,6 +83,17 @@
 #define PHY_DISCON_TH_SEL		0x2a
 #define PHY_SQUELCH_DETECT		0x3c
 
+//from wens https://github.com/wens/linux/tree/a83-usb
+/* A83T specific control bits for PHY0 */
+#define PHY_CTL_VBUSVLDEXT		BIT(5)
+#define PHY_CTL_SIDDQ			BIT(3)
+
+/* A83T specific control bits for PHY2 HSIC */
+#define SUNXI_EHCI_HS_FORCE             BIT(20)
+#define SUNXI_HSIC_CONNECT_DET          BIT(17)
+#define SUNXI_HSIC_CONNECT_INT          BIT(16)
+#define SUNXI_HSIC                      BIT(1)
+
 #define MAX_PHYS			4
 
 /*
@@ -95,6 +106,7 @@
 enum sun4i_usb_phy_type {
 	sun4i_a10_phy,
 	sun8i_a33_phy,
+	sun8i_a83t_phy,
 	sun8i_h3_phy,
 };
 
@@ -220,6 +232,7 @@ static void sun4i_usb_phy_write(struct sun4i_usb_phy *phy, u32 addr, u32 data,
 
 static void sun4i_usb_phy_passby(struct sun4i_usb_phy *phy, int enable)
 {
+	struct sun4i_usb_phy_data *phy_data = to_sun4i_usb_phy_data(phy);
 	u32 bits, reg_value;
 
 	if (!phy->pmu)
@@ -227,6 +240,11 @@ static void sun4i_usb_phy_passby(struct sun4i_usb_phy *phy, int enable)
 
 	bits = SUNXI_AHB_ICHR8_EN | SUNXI_AHB_INCR4_BURST_EN |
 		SUNXI_AHB_INCRX_ALIGN_EN | SUNXI_ULPI_BYPASS_EN;
+
+	/* A83T USB2 is HSIC */
+	if (phy_data->cfg->type == sun8i_a83t_phy && phy->index == 2)
+		bits |= SUNXI_EHCI_HS_FORCE | SUNXI_HSIC_CONNECT_INT |
+			SUNXI_HSIC;
 
 	reg_value = readl(phy->pmu);
 
@@ -263,6 +281,15 @@ static int sun4i_usb_phy_init(struct phy *_phy)
 
 		val = readl(phy->pmu + REG_PMU_UNK_H3);
 		writel(val & ~2, phy->pmu + REG_PMU_UNK_H3);
+	} else if (data->cfg->type == sun8i_a83t_phy) {
+		void __iomem *phyctl = data->base + data->cfg->phyctl_offset;
+
+		if (phy->index == 0) {
+			val = readl(phyctl);
+			val |= PHY_CTL_VBUSVLDEXT;
+			val &= ~PHY_CTL_SIDDQ;
+			writel(val, phyctl);
+		}
 	} else {
 		/* Enable USB 45 Ohm resistor calibration */
 		if (phy->index == 0)
@@ -306,6 +333,12 @@ static int sun4i_usb_phy_exit(struct phy *_phy)
 	struct sun4i_usb_phy_data *data = to_sun4i_usb_phy_data(phy);
 
 	if (phy->index == 0) {
+		if (data->cfg->type == sun8i_a83t_phy) {
+			void __iomem *phyctl = data->base + data->cfg->phyctl_offset;
+
+			writel(readl(phyctl) | PHY_CTL_SIDDQ, phyctl);
+		}
+
 		/* Disable pull-ups */
 		sun4i_usb_phy0_update_iscr(_phy, ISCR_DPDM_PULLUP_EN, 0);
 		sun4i_usb_phy0_update_iscr(_phy, ISCR_ID_PULLUP_EN, 0);
@@ -741,6 +774,13 @@ static const struct sun4i_usb_phy_cfg sun8i_a33_cfg = {
 	.dedicated_clocks = true,
 };
 
+static const struct sun4i_usb_phy_cfg sun8i_a83t_cfg = {
+	.num_phys = 3,
+	.type = sun8i_a83t_phy,
+	.phyctl_offset = REG_PHYCTL_A10,
+	.dedicated_clocks = true,
+};
+
 static const struct sun4i_usb_phy_cfg sun8i_h3_cfg = {
 	.num_phys = 4,
 	.type = sun8i_h3_phy,
@@ -755,6 +795,7 @@ static const struct of_device_id sun4i_usb_phy_of_match[] = {
 	{ .compatible = "allwinner,sun7i-a20-usb-phy", .data = &sun7i_a20_cfg },
 	{ .compatible = "allwinner,sun8i-a23-usb-phy", .data = &sun8i_a23_cfg },
 	{ .compatible = "allwinner,sun8i-a33-usb-phy", .data = &sun8i_a33_cfg },
+	{ .compatible = "allwinner,sun8i-a83t-usb-phy", .data = &sun8i_a83t_cfg },
 	{ .compatible = "allwinner,sun8i-h3-usb-phy", .data = &sun8i_h3_cfg },
 	{ },
 };

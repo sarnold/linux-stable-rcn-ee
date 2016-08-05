@@ -367,6 +367,13 @@ depends on ARCH_STI && OF
 source "drivers/thermal/st/Kconfig"
 endmenu
 
+config SUN8I_THS
+	tristate "sun8i THS driver"
+	depends on MACH_SUN8I
+	depends on OF
+	help
+	  Enable this to support thermal reporting on some newer Allwinner SoCs.
+
 config TANGO_THERMAL
 	tristate "Tango thermal management"
 	depends on ARCH_TANGO || COMPILE_TEST
