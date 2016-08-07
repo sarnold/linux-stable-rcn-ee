@@ -40,7 +40,6 @@
  *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
-
  */
 
 #include "skeleton.dtsi"
@@ -49,6 +48,7 @@
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/sun4i-a10.h>
 #include <dt-bindings/reset/sun8i-a83t.h>
+#include <dt-bindings/pwm/pwm.h>
 
 / {
 	interrupt-parent = <&gic>;
@@ -56,90 +56,106 @@
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		enable-method = "allwinner,sun6i-a31";
+//		enable-method = "allwinner,sun6i-a31";
 
 		cpu0: cpu@0 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
-			reg = <0>;
-			clocks = <&cpus>;
-			clock-latency = <244144>; /* 8 32k periods */
-			operating-points = <
-				/* kHz    uV */
-				1200000 1400000
-				1008000 1400000
-				912000	1400000
-				864000  1350000
-				720000  1250000
-				528000  1150000
-				432000	1100000
-				>;
-			#cooling-cells = <2>;
-			cooling-min-level = <0>;
-			cooling-max-level = <3>;
+			cci-control-port = <&cci_control1>;
+			clock-frequency = <12000000>;
+			reg = <0x0>;
+//			clocks = <&cpus>;
+//			clock-latency = <244144>; /* 8 32k periods */
+//			operating-points = <
+//				/* kHz    uV */
+//				1200000 1400000
+//				1008000 1400000
+//				912000	1400000
+//				864000  1350000
+//				720000  1250000
+//				528000  1150000
+//				432000	1100000
+//				>;
+//			#cooling-cells = <2>;
+//			cooling-min-level = <0>;
+//			cooling-max-level = <3>;
 		};
 
 		cpu1: cpu@1 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
-			reg = <1>;
-			clocks = <&cpus>;
+			cci-control-port = <&cci_control1>;
+			clock-frequency = <12000000>;
+			reg = <0x1>;
+//			clocks = <&cpus>;
 		};
 
 		cpu2: cpu@2 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
-			reg = <2>;
-			clocks = <&cpus>;
+			cci-control-port = <&cci_control1>;
+			clock-frequency = <12000000>;
+			reg = <0x2>;
+//			clocks = <&cpus>;
 		};
 
 		cpu3: cpu@3 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
-			reg = <3>;
-			clocks = <&cpus>;
+			cci-control-port = <&cci_control1>;
+			clock-frequency = <12000000>;
+			reg = <0x3>;
+//			clocks = <&cpus>;
 		};
 
 		cpu4: cpu@100 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
+			cci-control-port = <&cci_control2>;
+			clock-frequency = <12000000>;
 			reg = <0x100>;
-			clocks = <&cpus>;
-			clock-latency = <244144>; /* 8 32k periods */
-			operating-points = <
-				/* kHz    uV */
-				1200000 1400000
-				1008000 1400000
-				912000	1400000
-				864000  1350000
-				720000  1250000
-				528000  1150000
-				432000	1100000
-				>;
-			#cooling-cells = <2>;
-			cooling-min-level = <0>;
-			cooling-max-level = <3>;
+//			clocks = <&cpus>;
+//			clock-latency = <244144>; /* 8 32k periods */
+//			operating-points = <
+//				/* kHz    uV */
+//				1200000 1400000
+//				1008000 1400000
+//				912000	1400000
+//				864000  1350000
+//				720000  1250000
+//				528000  1150000
+//				432000	1100000
+//				>;
+//			#cooling-cells = <2>;
+//			cooling-min-level = <0>;
+//			cooling-max-level = <3>;
 		};
 
 		cpu5: cpu@101 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
+			cci-control-port = <&cci_control2>;
+			clock-frequency = <12000000>;
 			reg = <0x101>;
-			clocks = <&cpus>;
+//			clocks = <&cpus>;
 		};
 
 		cpu6: cpu@102 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
+			cci-control-port = <&cci_control2>;
+			clock-frequency = <12000000>;
 			reg = <0x102>;
-			clocks = <&cpus>;
+//			clocks = <&cpus>;
 		};
 
 		cpu7: cpu@103 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
+			cci-control-port = <&cci_control2>;
+			clock-frequency = <12000000>;
 			reg = <0x103>;
-			clocks = <&cpus>;
+//			clocks = <&cpus>;
 		};
 	};
 
@@ -151,14 +167,18 @@
 		};
 	};
 
+//	memory {
+//		reg = <0x40000000 0x80000000>;
+//	};
+
 	timer {
 		compatible = "arm,armv7-timer";
 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>;
-		clock-frequency = <24000000>;
-		arm,cpu-registers-not-fw-configured;
+//		clock-frequency = <24000000>;
+//		arm,cpu-registers-not-fw-configured;
 	};
 
 	clocks {
@@ -186,62 +206,65 @@
 			clock-output-names = "osc16M";
 		};
 
-//		osc16Md512: osc16Md512_clk {
 		osc32k: osc32k_clk {
 			#clock-cells = <0>;
 			compatible = "fixed-factor-clock";
 			clock-div = <512>;
 			clock-mult = <1>;
 			clocks = <&osc16M>;
-//			clock-output-names = "osc16M-d512";
 			clock-output-names = "osc32k";
 		};
 
-		cpus: clk@01f01400 {
-			compatible = "allwinner,sun9i-a80-cpus-clk";
-			reg = <0x01f01400 0x4>;
+		cci400: clk@01790000 {
 			#clock-cells = <0>;
-			clocks = <&osc32k>, <&osc24M>,
-			         <&ccu CLK_PLL_PERIPH>, <&osc16M>;
-			clock-output-names = "cpus";
+			compatible = "arm,cci-400";
+			reg = <0x01790000 0x4>;
+			clocks = <&osc24M>,
+			         <&ccu CLK_PLL_PERIPH>,
+				 <&ccu CLK_PLL_HSIC>;
+			clock-output-names = "cci400";
+			assigned-clocks = <&cci400>;
+			assigned-clock-parents = <&ccu CLK_PLL_PERIPH>;
 		};
 
-		ahb0: ahb0_clk {
-			compatible = "fixed-factor-clock";
-			#clock-cells = <0>;
-			clock-div = <1>;
-			clock-mult = <1>;
-			clocks = <&cpus>;
-			clock-output-names = "ahb0";
+//		cpus: cpu_clk@01f01400 {
+//			compatible = "allwinner,sun4i-a10-cpu-clk";
+//			compatible = "allwinner,sun9i-a80-cpus-clk";
+//			reg = <0x01f01400 0x4>;
+//			#clock-cells = <0>;
+//			clocks = <&osc32k>, <&osc24M>,
+//			         <&ccu CLK_PLL_PERIPH>, <&osc16M>;
+//			clock-output-names = "cpus";
+//		};
+	};
+
+	cci@01790000 {
+		compatible = "arm,cci-400";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x01790000 0x1000>;
+		ranges = <0x0 0x01790000 0x10000>;
+
+		cci_control1: slave-if@4000 {
+			compatible = "arm,cci-400-ctrl-if";
+			interface-type = "ace";
+			reg = <0x4000 0x1000>;
 		};
 
-		apb0: clk@01f0140c {
-			compatible = "allwinner,sun8i-a23-apb0-clk";
-			reg = <0x01f0140c 0x4>;
-			#clock-cells = <0>;
-			clocks = <&ahb0>;
-			clock-output-names = "apb0";
+		cci_control2: slave-if@5000 {
+			compatible = "arm,cci-400-ctrl-if";
+			interface-type = "ace";
+			reg = <0x5000 0x1000>;
 		};
-
-		apb0_gates: clk@01f01428 {
-			compatible = "allwinner,sun8i-a83t-apb0-gates-clk";
-			reg = <0x01f01428 0x4>;
-			#clock-cells = <1>;
-			clocks = <&apb0>;
-			clock-indices = <0>, <1>,
-					<2>, <3>,
-					<4>, <6>, <7>;
-			clock-output-names = "apb0_pio", "apb0_ir",
-					"apb0_timer", "apb0_rsb",
-					"apb0_uart", "apb0_i2c0", "apb0_twd";
-		};
-
-		ir_clk: ir_clk@01f01454 {
-			compatible = "allwinner,sun4i-a10-mod0-clk";
-			reg = <0x01f01454 0x4>;
-			#clock-cells = <0>;
-			clocks = <&osc32k>, <&osc24M>;
-			clock-output-names = "ir";
+	
+		pmu@9000 {
+			compatible = "arm,cci-400-pmu,r1";
+			reg = <0x9000 0x5000>;
+			interrupts = <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
+			             <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
 		};
 	};
 
@@ -256,13 +279,13 @@
 			reg = <0x01000000 0x400000>;
 			clocks = <&ccu CLK_PLL_DE>;
 			clock-names = "clock";
-//			resets = <&ccu RST_DE>;
 			ports = <&lcd1_p>;
 			status = "disabled";
 		};
 
 		dma: dma-controller@01c02000 {
 			compatible = "allwinner,sun8i-a83t-dma";
+//			cci-control-port = <&cci_control0>;
 			reg = <0x01c02000 0x1000>;
 			interrupts = <GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&ccu CLK_BUS_DMA>;
@@ -275,7 +298,6 @@
 			reg = <0x01c0d000 0x400>;
 			clocks = <&ccu CLK_TCON1>;
 			clock-names = "clock";
-//			resets = <&ccu RST_TCON1>;
 			interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
 			status = "disabled";
 			#address-cells = <1>;
@@ -445,7 +467,6 @@
 			hdmi_pins_a: hdmi@0 {
 				allwinner,pins = "PH6", "PH7", "PH8";
 				allwinner,function = "hdmi";
-//				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 			};
 
@@ -478,7 +499,7 @@
 						 "PC12", "PC13", "PC14",
 						 "PC15", "PC16";
 				allwinner,function = "mmc2";
-				allwinner,drive = <SUN4I_PINCTRL_40_MA>;
+				allwinner,drive = <SUN4I_PINCTRL_30_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 			};
 
@@ -495,6 +516,14 @@
 				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 			};
+		};
+
+		pwm: pwm@01c21400 {
+			compatible = "allwinner,sun7i-a20-pwm";
+			reg = <0x01c21400 0xc>;
+			clocks = <&osc24M>;
+			#pwm-cells = <3>;
+			status = "disabled";
 		};
 
 		timer@01c20c00 {
@@ -516,7 +545,6 @@
 			reg = <0x01c22800 0x400>;
 			clocks = <&ccu CLK_PLL_AUDIO>, <&ccu CLK_DAUDIO2>;
 			clock-names = "clock", "i2s2";
-//			resets = <&ccu RST_DAUDIO2>;
 			dmas = <&dma 27>;
 			dma-names = "tx";
 			status = "disabled";
@@ -534,7 +562,7 @@
 			dma-names = "rx", "tx";
 			status = "disabled";
 		};
-//fixme: more uart 1..4
+//fixme: more uart 2..4
 
 		uart1: serial@01c28400 {
 			compatible = "snps,dw-apb-uart";
@@ -579,22 +607,76 @@
 			};
 		};
 
-		rtc: rtc@01f00000 {
-			compatible = "allwinner,sun6i-a31-rtc";
-			reg = <0x01f00000 0x54>;
-			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
-			             <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
-		};
-
-		apb0_reset: reset@01f014b0 {
-			reg = <0x01f014b0 0x4>;
-			compatible = "allwinner,sun6i-a31-clock-reset";
-			#reset-cells = <1>;
-		};
-
+//		rtc: rtc@01f00000 {
+//			compatible = "allwinner,sun6i-a31-rtc";
+//			reg = <0x01f00000 0x54>;
+//			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
+//			             <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+//		};
+//
 		cpucfg@01f01c00 {
 			compatible = "allwinner,sun6i-a31-cpuconfig";
-			reg = <0x01f01c00 0x300>;
+			reg = <0x01f01c00 0x400>;
+		};
+//
+//		nmi_intc: interrupt-controller@01f00c00 {
+//			compatible = "allwinner,sun6i-a31-sc-nmi";
+//			reg = <0x01f01c00 0x400>;
+//			interrupt-controller;
+//			#interrupt-cells = <2>;
+//			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+//		};
+
+		prcm@01f01400 {
+			compatible = "allwinner,sun6i-a31-prcm";
+			reg = <0x01f01400 0x200>;
+
+			ar100: ar100_clk {
+				compatible = "allwinner,sun6i-a31-ar100-clk";
+				#clock-cells = <0>;
+				clocks = <&osc32k>, <&osc24M>,
+				         <&ccu CLK_PLL_PERIPH>,
+					 <&osc16M>;
+				clock-output-names = "ar100";
+			};
+
+			ahb0: ahb0_clk {
+				compatible = "fixed-factor-clock";
+				#clock-cells = <0>;
+				clock-div = <1>;
+				clock-mult = <1>;
+				clocks = <&ar100>;
+				clock-output-names = "ahb0";
+			};
+
+			apb0: apb0_clk {
+				compatible = "allwinner,sun6i-a31-apb0-clk";
+				#clock-cells = <0>;
+				clocks = <&ahb0>;
+				clock-output-names = "apb0";
+			};
+
+			apb0_gates: apb0_gates_clk {
+				compatible = "allwinner,sun6i-a31-apb0-gates-clk";
+				#clock-cells = <1>;
+				clocks = <&apb0>;
+				clock-output-names = "apb0_pio", "apb0_ir",
+				                     "apb0_timer", "apb0_rsb",
+				                     "apb0_uart", "apb0_i2c0",
+						     "apb0_twd";
+			};
+
+			ir_clk: ir_clk {
+				#clock-cells = <0>;
+				compatible = "allwinner,sun4i-a10-mod0-clk";
+				clocks = <&osc32k>, <&osc24M>;
+				clock-output-names = "ir";
+			};
+
+			apb0_reset: apb0_reset {
+				compatible = "allwinner,sun6i-a31-clock-reset";
+				#reset-cells = <1>;
+			};
 		};
 
 		ir: ir@01f02000 {
@@ -627,6 +709,13 @@
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 			};
 
+			r_pwm_pins: pwm {
+				allwinner,pins = "PL10";
+				allwinner,function = "s_pwm";
+				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
 			r_rsb_pins: r_rsb {
 				allwinner,pins = "PL0", "PL1";
 				allwinner,function = "s_rsb";
@@ -653,10 +742,10 @@
 			#thermal-sensor-cells = <0>;
 			compatible = "allwinner,sun8i-a83t-ths";
 			reg = <0x01f04000 0x8c>;
-//fixme: irq 31 in H3 - irq removed for a83t in drivers/thermal/sun8i_ths.c
+//fixme: irq 31 in H3 - irq in a83t UM is 73
 //			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
 //useless if not android ?
-//			nvmem-cells = <&ths_calibration>;
+//			nvmem-cells = <&r_th_calibration>;
 //			nvmem-cell-names = "calibration";
 		};
 	};
