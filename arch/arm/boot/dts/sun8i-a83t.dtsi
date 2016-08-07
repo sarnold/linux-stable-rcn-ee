@@ -1,7 +1,7 @@
 /*
- * Copyright 2015 Vishnu Patekar
+ * Copyright 2015 Vishnu Patekar <vishnupatekar0510@gmail.com>
  *
- * Vishnu Patekar <vishnupatekar0510@gmail.com>
+ * Changes copyright 2016 Stephen Arnold <nerdboy@gentoo.org>
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -177,8 +177,8 @@
 			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_LOW)>;
-//		clock-frequency = <24000000>;
-//		arm,cpu-registers-not-fw-configured;
+		clock-frequency = <24000000>;
+		arm,cpu-registers-not-fw-configured;
 	};
 
 	clocks {
@@ -260,11 +260,11 @@
 		pmu@9000 {
 			compatible = "arm,cci-400-pmu,r1";
 			reg = <0x9000 0x5000>;
-			interrupts = <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
-			             <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>,
+			             <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>;
 		};
 	};
 
@@ -607,25 +607,18 @@
 			};
 		};
 
-//		rtc: rtc@01f00000 {
-//			compatible = "allwinner,sun6i-a31-rtc";
-//			reg = <0x01f00000 0x54>;
-//			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
-//			             <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
-//		};
-//
 		cpucfg@01f01c00 {
 			compatible = "allwinner,sun6i-a31-cpuconfig";
 			reg = <0x01f01c00 0x400>;
 		};
-//
-//		nmi_intc: interrupt-controller@01f00c00 {
-//			compatible = "allwinner,sun6i-a31-sc-nmi";
-//			reg = <0x01f01c00 0x400>;
-//			interrupt-controller;
-//			#interrupt-cells = <2>;
-//			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-//		};
+
+		nmi_intc: interrupt-controller@01f00c00 {
+			compatible = "allwinner,sun6i-a31-sc-nmi";
+			reg = <0x01f01c00 0x400>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+		};
 
 		prcm@01f01400 {
 			compatible = "allwinner,sun6i-a31-prcm";
@@ -742,10 +735,9 @@
 			#thermal-sensor-cells = <0>;
 			compatible = "allwinner,sun8i-a83t-ths";
 			reg = <0x01f04000 0x8c>;
-//fixme: irq 31 in H3 - irq in a83t UM is 73
-//			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
 //useless if not android ?
-//			nvmem-cells = <&r_th_calibration>;
+//			nvmem-cells = <&ths_calibration>;
 //			nvmem-cell-names = "calibration";
 		};
 	};
