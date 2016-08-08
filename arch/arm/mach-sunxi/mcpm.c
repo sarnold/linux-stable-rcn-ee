@@ -339,10 +339,13 @@ static int sunxi_wait_for_powerdown(unsigned int cpu, unsigned int cluster)
 		return ret;
 
 	/* power down CPU core */
-	sunxi_cpu_powerdown(cpu, cluster);
+	ret = sunxi_cpu_powerdown(cpu, cluster);
 
-	if (__mcpm_cluster_state(cluster) != CLUSTER_DOWN)
-		return 0;
+	if (ret)
+		return ret;
+
+//	if (__mcpm_cluster_state(cluster) != CLUSTER_DOWN)
+//		return 0;
 
 	/* last man standing, assert ACINACTM */
 	reg = readl(cpucfg_base + CPUCFG_CX_CTRL_REG1(cluster));
