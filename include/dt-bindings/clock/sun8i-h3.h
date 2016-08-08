@@ -97,5 +97,7 @@
 #define CLK_USB_PHY2		51
 #define CLK_USB_PHY3		52
 #define CLK_VE			53
+#define CLK_BUS_EMAC		70
+#define CLK_BUS_EPHY		89
 
 #endif /* _DT_BINDINGS_CLK_SUN8I_H3_H_ */

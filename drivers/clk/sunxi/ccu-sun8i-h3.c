@@ -917,7 +917,7 @@ static struct clk_hw_onecell_data sun8i_h3_ccu_data = {
 		&bus_ce_clk.hw,
 		&bus_nand_clk.hw,
 		&bus_dram_clk.hw,
-		&bus_emac_clk.hw,			/* 70 */
+		[CLK_BUS_EMAC]		= &bus_emac_clk.hw,	/* 70 */
 		&bus_ts_clk.hw,
 		&bus_hstimer_clk.hw,
 		&bus_spi0_clk.hw,
@@ -936,8 +936,8 @@ static struct clk_hw_onecell_data sun8i_h3_ccu_data = {
 		&bus_i2c1_clk.hw,
 		&bus_i2c2_clk.hw,
 		&bus_scr_clk.hw,
-		&bus_ephy_clk.hw,
-		&bus_dbg_clk.hw,			/* 80 */
+		[CLK_BUS_EPHY]		= &bus_ephy_clk.hw,
+		&bus_dbg_clk.hw,			/* 90 */
 		&nand_clk.hw,
 		&ts_clk.hw,
 		&ce_clk.hw,
@@ -947,7 +947,7 @@ static struct clk_hw_onecell_data sun8i_h3_ccu_data = {
 		&dram_deinterlace_clk.hw,
 		&dram_ts_clk.hw,
 		&deinterlace_clk.hw,
-		&csi_misc_clk.hw,			/* 90 */
+		&csi_misc_clk.hw,			/* 100 */
 		&csi_sclk_clk.hw,
 		&csi_mclk_clk.hw,
 		&ac_dig_clk.hw,
