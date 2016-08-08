@@ -476,21 +476,6 @@
 			};
 		};
 
-			uart0_pins_a: uart0@0 {
-				allwinner,pins = "PA4", "PA5";
-				allwinner,function = "uart0";
-				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-			};
-
-			uart1_pins_a: uart1@0 {
-				allwinner,pins = "PG6", "PG7", "PG8", "PG9";
-				allwinner,function = "uart1";
-				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-			};
-		};
-
 		timer@01c20c00 {
 			compatible = "allwinner,sun4i-a10-timer";
 			reg = <0x01c20c00 0xa0>;
@@ -586,21 +571,21 @@
 			dma-names = "rx", "tx";
 			status = "disabled";
 		};
-#endif //test2
 
 		emac: ethernet@1c30000 {
 			compatible = "allwinner,sun8i-h3-emac";
 			reg = <0x01c30000 0x104>, <0x01c00030 0x4>;
 			reg-names = "emac", "syscon";
 			interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
-			resets = <&ahb_rst 17>, <&ahb_rst 66>;
-			reset-names = "ahb", "ephy";
-			clocks = <&bus_gates 17>, <&bus_gates 128>;
-			clock-names = "ahb", "ephy";
+			clocks = <&ccu CLK_BUS_EMAC>, <&ccu CLK_BUS_EPHY>;
+			clock-names = "emac", "ephy";
+			resets = <&ccu RST_EMAC>, <&ccu RST_EPHY>;
+			reset-names = "emac", "ephy";
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
 		};
+#endif //test2
 
 		gic: interrupt-controller@01c81000 {
 			compatible = "arm,cortex-a7-gic", "arm,cortex-a15-gic";
