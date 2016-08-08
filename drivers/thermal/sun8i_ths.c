@@ -33,10 +33,10 @@
 /* common A83T/H3 */
 #define THS_H3_CTRL0			0x00
 #define THS_H3_CTRL1			0x04
-#define THS_H3_CDAT				0x14
+#define THS_H3_CDAT			0x14
 #define THS_H3_CTRL2			0x40
-#define THS_H3_INT_CTRL			0x44
-#define THS_H3_STAT				0x48
+#define THS_INT_CTRL			0x44
+#define THS_STAT			0x48
 #define THS_H3_ALARM_CTRL		0x50
 #define THS_A83T_ALARM_CTRL1		0x54
 #define THS_A83T_ALARM_CTRL2		0x58
@@ -196,7 +196,7 @@ static int sun8i_ths_a83t_init(struct platform_device *pdev,
 	       data->regs + THS_H3_CTRL2);
 	writel(THS_H3_INT_CTRL_THERMAL_PER(THS_A83T_INT_CTRL_THERMAL_PER_VALUE) |
 			THS_A83T_INT_CTRL_ALARM_INT_EN(7),
-	       data->regs + THS_H3_INT_CTRL);
+	       data->regs + THS_INT_CTRL);
 	writel(THS_H3_FILTER_EN |
 			THS_H3_FILTER_TYPE(THS_A83T_FILTER_TYPE_VALUE),
 	       data->regs + THS_H3_FILTER);
@@ -216,8 +216,8 @@ static void sun8i_ths_a83t_irq(struct sun8i_ths_data *data)
 {
 	u32 status;
 
-	status = readl(data->regs + THS_H3_STAT);
-	writel(status, data->regs + THS_H3_STAT);
+	status = readl(data->regs + THS_STAT);
+	writel(status, data->regs + THS_STAT);
 }
 
 static void sun8i_ths_a83t_deinit(struct sun8i_ths_data *data)
@@ -312,7 +312,7 @@ static int sun8i_ths_h3_init(struct platform_device *pdev,
 //jfm
 /*	       THS_H3_INT_CTRL_DATA_IRQ_EN, */
 		THS_H3_INT_CTRL_ALARM_INT_EN,
-	       data->regs + THS_H3_INT_CTRL);
+	       data->regs + THS_INT_CTRL);
 	writel(THS_H3_FILTER_EN | THS_H3_FILTER_TYPE(THS_H3_FILTER_TYPE_VALUE),
 	       data->regs + THS_H3_FILTER);
 	writel(THS_H3_CTRL2_SENSOR_ACQ1(THS_H3_CTRL2_SENSOR_ACQ1_VALUE) |
@@ -335,16 +335,14 @@ static int sun8i_ths_h3_get_temp(struct sun8i_ths_data *data, int *out)
 	return 0;
 }
 
-#if 0
 static void sun8i_ths_h3_irq(struct sun8i_ths_data *data)
 {
 	writel(THS_H3_STAT_DATA_IRQ_STS |
 	       THS_H3_STAT_ALARM_INT_STS |
 	       THS_H3_STAT_ALARM_OFF_STS |
 	       THS_H3_STAT_SHUT_INT_STS,
-	       data->regs + THS_H3_STAT);
+	       data->regs + THS_STAT);
 }
-#endif
 
 static void sun8i_ths_h3_deinit(struct sun8i_ths_data *data)
 {
@@ -362,7 +360,6 @@ static const struct sun8i_ths_type sun8i_ths_device_h3 = {
 	.init = sun8i_ths_h3_init,
 	.get_temp = sun8i_ths_h3_get_temp,
 	.irq = sun8i_ths_h3_irq,
-//	.irq = sun8i_ths_a83t_irq,
 	.deinit = sun8i_ths_h3_deinit,
 };
 
@@ -417,8 +414,6 @@ static int sun8i_ths_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-//fixme: no interrupt in the A83T ??
-    if (data->type != &sun8i_ths_device_a83t) {
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
 		dev_err(&pdev->dev, "failed to get IRQ: %d\n", irq);
@@ -430,7 +425,6 @@ static int sun8i_ths_probe(struct platform_device *pdev)
 					dev_name(&pdev->dev), data);
 	if (ret)
 		return ret;
-    }
 
 	ret = data->type->init(pdev, data);
 	if (ret)
