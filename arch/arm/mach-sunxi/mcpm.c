@@ -247,7 +247,7 @@ static int sunxi_cluster_powerup(unsigned int cluster)
 
 static void sunxi_cpu_powerdown_prepare(unsigned int cpu, unsigned int cluster)
 {
-	gic_cpu_if_down();
+	gic_cpu_if_down(cpu);
 }
 
 static void sunxi_cluster_powerdown_prepare(unsigned int cluster)
