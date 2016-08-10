@@ -281,6 +281,8 @@ config MDIO_BCM_IPROC
 	  This module provides a driver for the MDIO busses found in the
 	  Broadcom iProc SoC's.
 
+source "drivers/net/phy/b53/Kconfig"
+
 endif # PHYLIB
 
 config MICREL_KS8995MA
