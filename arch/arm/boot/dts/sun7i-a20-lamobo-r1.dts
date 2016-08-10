@@ -49,8 +49,11 @@
 #include <dt-bindings/pinctrl/sun4i-a10.h>
 
 / {
-	model = "Lamobo R1";
-	compatible = "lamobo,lamobo-r1", "allwinner,sun7i-a20";
+	model = "Lamobo R1 / Sinovoip BananaPi R1";
+	compatible = "lamobo,lamobo-r1",
+		     "sinovoip,bpi-r1",
+		     "sinovoip,bananapi-r1",
+		     "allwinner,sun7i-a20";
 
 	aliases {
 		serial0 = &uart0;
