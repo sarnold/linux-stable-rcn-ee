@@ -887,7 +887,7 @@
 		crypto: crypto-engine@01c15000 {
 			compatible = "allwinner,sun4i-a10-crypto";
 			reg = <0x01c15000 0x1000>;
-			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&ahb_gates 5>, <&ss_clk>;
 			clock-names = "ahb", "mod";
 		};
@@ -1015,7 +1015,7 @@
 			};
 
 			uart5_pins_a: uart5@0 {
-				allwinner,pins = "PI10", "PI11";
+				allwinner,pins = "PH6", "PH7";
 				allwinner,function = "uart5";
 				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
