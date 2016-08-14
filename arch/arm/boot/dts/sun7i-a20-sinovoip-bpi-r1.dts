@@ -76,16 +76,24 @@
 		};
 	};
 
-	reg_gmac_3v3: gmac-3v3 {
+	reg_axp_ipsout: axp_ipsout {
 		compatible = "regulator-fixed";
-		pinctrl-names = "default";
-		pinctrl-0 = <&gmac_power_pin_bananapi>;
-		regulator-name = "gmac-3v3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-		gpio = <&pio 7 23 GPIO_ACTIVE_HIGH>; /* PH23 */
+		regulator-name = "axp-ipsout";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
 	};
+
+//	reg_gmac_3v3: gmac-3v3 {
+//		compatible = "regulator-fixed";
+//		pinctrl-names = "default";
+//		pinctrl-0 = <&gmac_power_pin_bananapi>;
+//		regulator-name = "gmac-3v3";
+//		regulator-min-microvolt = <3300000>;
+//		regulator-max-microvolt = <3300000>;
+//		enable-active-high;
+//		gpio = <&pio 7 23 GPIO_ACTIVE_HIGH>; /* PH23 */
+//	};
 
 };
 
@@ -117,10 +125,10 @@
 
 &gmac {
 	pinctrl-names = "default";
-	pinctrl-0 = <&gmac_pins_rgmii_a>, <&gmac_phy_reset_pin_bananapi>;
+	pinctrl-0 = <&gmac_pins_rgmii_a>;
 	phy = <&phy1>;
 	phy-mode = "rgmii";
-	phy-supply = <&reg_gmac_3v3>;
+//	phy-supply = <&reg_gmac_3v3>;
 	/* phy reset config */
 	snps,reset-gpio = <&pio 0 17 GPIO_ACTIVE_HIGH>; /* PA17 */
 	snps,reset-active-low;
@@ -146,6 +154,52 @@
 
 		interrupt-controller;
 		#interrupt-cells = <1>;
+
+		acin-supply = <&reg_axp_ipsout>;
+		vin2-supply = <&reg_axp_ipsout>;
+		vin3-supply = <&reg_axp_ipsout>;
+		ldo24in-supply = <&reg_axp_ipsout>;
+		ldo3in-supply = <&reg_axp_ipsout>;
+
+		regulators {
+			dram_vcc: vcc-dram {
+				regulator-min-microvolt = <1500000>;
+				regulator-max-microvolt = <1500000>;
+				regulator-name = "vcc-dram";
+			};
+
+			cpu_vdd: dcdc2 {
+				regulator-min-microvolt = <1250000>;
+				regulator-max-microvolt = <1250000>;
+				regulator-always-on;
+				regulator-name = "vdd-cpu";
+			};
+
+			int_vdd: dcdc3 {
+				regulator-min-microvolt = <1250000>;
+				regulator-max-microvolt = <1250000>;
+				regulator-always-on;
+				regulator-name = "vdd-int";
+			};
+
+			avcc: ldo2 {
+				regulator-min-microvolt = <3000000>;
+				regulator-max-microvolt = <3000000>;
+				regulator-always-on;
+				regulator-name = "avcc";
+			};
+
+			rtc_vcc: ldo1 {
+				regulator-name = "vcc-rtc";
+			};
+
+			iovdd: ldo3 {
+				regulator-min-microvolt = <2800000>;
+				regulator-max-microvolt = <2800000>;
+				regulator-always-on;
+				regulator-name = "vdd-io";
+			};
+		};
 	};
 };
 
@@ -175,6 +229,10 @@
 	cd-gpios = <&pio 7 10 GPIO_ACTIVE_HIGH>; /* PH10 */
 	cd-inverted;
 	status = "okay";
+};
+
+&mmc0_pins_a {
+	allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
 };
 
 &otg_sram {
@@ -217,20 +275,20 @@
 		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
 	};
 
-	gmac_power_pin_bananapi: gmac_power_pin@0 {
-		allwinner,pins = "PH23";
-		allwinner,function = "gpio_out";
-		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-	};
-
-	gmac_phy_reset_pin_bananapi: gmac_phy_reset_pin@0 {
-		allwinner,pins = "PA17";
-		allwinner,function = "gpio_out";
-		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-	};
-
+//	gmac_power_pin_bananapi: gmac_power_pin@0 {
+//		allwinner,pins = "PH23";
+//		allwinner,function = "gpio_out";
+//		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+//		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+//	};
+//
+//	gmac_phy_reset_pin_bananapi: gmac_phy_reset_pin@0 {
+//		allwinner,pins = "PA17";
+//		allwinner,function = "gpio_out";
+//		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+//		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+//	};
+//
 	led_pins_bananapi: led_pins@0 {
 		allwinner,pins = "PH24";
 		allwinner,function = "gpio_out";
@@ -244,31 +302,6 @@
 };
 
 #include "axp209.dtsi"
-
-&reg_dcdc2 {
-	regulator-always-on;
-	regulator-min-microvolt = <1250000>;
-	regulator-max-microvolt = <1600000>;
-	regulator-name = "vdd-cpu";
-};
-
-&reg_dcdc3 {
-	regulator-always-on;
-	regulator-min-microvolt = <1200000>;
-	regulator-max-microvolt = <1200000>;
-	regulator-name = "vdd-int-dll";
-};
-
-&reg_ldo1 {
-	regulator-name = "vdd-rtc";
-};
-
-&reg_ldo2 {
-	regulator-always-on;
-	regulator-min-microvolt = <3000000>;
-	regulator-max-microvolt = <3000000>;
-	regulator-name = "avcc";
-};
 
 &reg_usb0_vbus {
 	status = "okay";
@@ -302,12 +335,6 @@
 	status = "okay";
 };
 
-//&uart3 {
-//	pinctrl-names = "default";
-//	pinctrl-0 = <&uart3_pins_b>;
-//	status = "okay";
-//};
-
 &uart7 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart7_pins_a>;
@@ -316,6 +343,10 @@
 
 &usb_otg {
 	dr_mode = "host";
+	status = "okay";
+};
+
+&usb_power_supply {
 	status = "okay";
 };
 
