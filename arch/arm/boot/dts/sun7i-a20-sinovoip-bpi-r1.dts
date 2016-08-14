@@ -83,18 +83,14 @@
 		regulator-name = "gmac-3v3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		startup-delay-us = <100000>;
 		enable-active-high;
 		gpio = <&pio 7 23 GPIO_ACTIVE_HIGH>; /* PH23 */
 	};
 
 };
 
-//&ahci_pwr_pin_a {
-//	allwinner,pins = "PB3";
-//};
-
 &ahci {
+	/* default PB3 is correct */
 	target-supply = <&reg_ahci_5v>;
 	status = "okay";
 };
@@ -121,10 +117,15 @@
 
 &gmac {
 	pinctrl-names = "default";
-	pinctrl-0 = <&gmac_pins_rgmii_a>;
+	pinctrl-0 = <&gmac_pins_rgmii_a>, <&gmac_phy_reset_pin_bananapi>;
 	phy = <&phy1>;
 	phy-mode = "rgmii";
 	phy-supply = <&reg_gmac_3v3>;
+	/* phy reset config */
+	snps,reset-gpio = <&pio 0 17 GPIO_ACTIVE_HIGH>; /* PA17 */
+	snps,reset-active-low;
+	/* wait 1 sec after reset, otherwise fail to read phy id */
+	snps,reset-delays-us = <0 10000 1000000>;
 	status = "okay";
 
 	phy1: ethernet-phy@1 {
@@ -148,7 +149,11 @@
 	};
 };
 
-#include "axp209.dtsi"
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins_a>;
+	status = "okay";
+};
 
 &i2c2 {
 	pinctrl-names = "default";
@@ -167,7 +172,7 @@
 	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin_bananapi>;
 	vmmc-supply = <&reg_vcc3v3>;
 	bus-width = <4>;
-	cd-gpios = <&pio 7 1 GPIO_ACTIVE_HIGH>; /* PH1 */
+	cd-gpios = <&pio 7 10 GPIO_ACTIVE_HIGH>; /* PH10 */
 	cd-inverted;
 	status = "okay";
 };
@@ -206,7 +211,7 @@
 	};
 
 	mmc0_cd_pin_bananapi: mmc0_cd_pin@0 {
-		allwinner,pins = "PH1";
+		allwinner,pins = "PH10";
 		allwinner,function = "gpio_in";
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
@@ -214,6 +219,13 @@
 
 	gmac_power_pin_bananapi: gmac_power_pin@0 {
 		allwinner,pins = "PH23";
+		allwinner,function = "gpio_out";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+	};
+
+	gmac_phy_reset_pin_bananapi: gmac_phy_reset_pin@0 {
+		allwinner,pins = "PA17";
 		allwinner,function = "gpio_out";
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
@@ -231,17 +243,19 @@
 	status = "okay";
 };
 
+#include "axp209.dtsi"
+
 &reg_dcdc2 {
 	regulator-always-on;
-	regulator-min-microvolt = <1000000>;
-	regulator-max-microvolt = <1400000>;
+	regulator-min-microvolt = <1250000>;
+	regulator-max-microvolt = <1600000>;
 	regulator-name = "vdd-cpu";
 };
 
 &reg_dcdc3 {
 	regulator-always-on;
-	regulator-min-microvolt = <1000000>;
-	regulator-max-microvolt = <1400000>;
+	regulator-min-microvolt = <1200000>;
+	regulator-max-microvolt = <1200000>;
 	regulator-name = "vdd-int-dll";
 };
 
@@ -257,8 +271,6 @@
 };
 
 &reg_usb0_vbus {
-	pinctrl-0 = <&usb0_vbus_pin_bananapi>;
-	gpio = <&pio 1 9 GPIO_ACTIVE_HIGH>; /* PB9 */
 	status = "okay";
 };
 
@@ -267,8 +279,6 @@
 };
 
 &reg_usb2_vbus {
-	pinctrl-0 = <&usb2_vbus_pin_bananapi>;
-	gpio = <&pio 7 3 GPIO_ACTIVE_HIGH>; /* PH3 */
 	status = "okay";
 };
 
@@ -292,11 +302,11 @@
 	status = "okay";
 };
 
-&uart3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&uart3_pins_b>;
-	status = "okay";
-};
+//&uart3 {
+//	pinctrl-names = "default";
+//	pinctrl-0 = <&uart3_pins_b>;
+//	status = "okay";
+//};
 
 &uart7 {
 	pinctrl-names = "default";
@@ -305,21 +315,17 @@
 };
 
 &usb_otg {
-	dr_mode = "otg";
-	status = "okay";
-};
-
-&usb_power_supply {
+	dr_mode = "host";
 	status = "okay";
 };
 
 &usbphy {
 	pinctrl-names = "default";
-	pinctrl-0 = <&usb0_id_detect_pin>;
-	usb0_id_det-gpio = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH4 */
-	usb0_vbus_power-supply = <&usb_power_supply>;
+	pinctrl-0 = <&usb0_id_detect_pin>, <&usb0_vbus_detect_pin>;
+	usb0_id_det-gpios = <&pio 7 4 GPIO_ACTIVE_HIGH>;    /* PH4 */
+	usb0_vbus_det-gpios = <&pio 7 5 GPIO_ACTIVE_HIGH>;  /* PH5 */
 	usb0_vbus-supply = <&reg_usb0_vbus>;
-	usb1_vbus-supply = <&reg_usb1_vbus>;
-	usb2_vbus-supply = <&reg_usb2_vbus>;
+	usb1_vbus-supply = <&reg_vcc5v0>; /* USB1 VBUS is always on */
+	usb2_vbus-supply = <&reg_vcc5v0>; /* USB2 VBUS is always on */
 	status = "okay";
 };
