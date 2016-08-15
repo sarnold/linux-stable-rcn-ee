@@ -94,7 +94,8 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		enable-active-high;
-		gpio = <&pio 7 23 GPIO_ACTIVE_HIGH>; /* PH23 */
+		/* default PH23 NOT correct for gmac */
+		gpio = <&pio 0 13 GPIO_ACTIVE_HIGH>; /* PA13 */
 	};
 
 };
@@ -278,7 +279,7 @@
 	};
 
 	gmac_power_pin_bananapi: gmac_power_pin@0 {
-		allwinner,pins = "PH23";
+		allwinner,pins = "PA13";
 		allwinner,function = "gpio_out";
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
