@@ -1015,6 +1015,13 @@
 			};
 
 			uart5_pins_a: uart5@0 {
+				allwinner,pins = "PI10", "PI11";
+				allwinner,function = "uart5";
+				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
+			uart5_pins_b: uart5@1 {
 				allwinner,pins = "PH6", "PH7";
 				allwinner,function = "uart5";
 				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
@@ -1144,6 +1151,13 @@
 
 			spi1_cs0_pins_a: spi1_cs0@0 {
 				allwinner,pins = "PI16";
+				allwinner,function = "spi1";
+				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
+			spi1_cs1_pins_a: spi1_cs1@0 {
+				allwinner,pins = "PI15";
 				allwinner,function = "spi1";
 				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
