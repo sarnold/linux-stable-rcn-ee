@@ -1070,6 +1070,13 @@
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 			};
 
+			i2c4_pins_a: i2c4@0 {
+				allwinner,pins = "PI2", "PI3";
+				allwinner,function = "i2c4";
+				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+			};
+
 			emac_pins_a: emac0@0 {
 				allwinner,pins = "PA0", "PA1", "PA2",
 						"PA3", "PA4", "PA5", "PA6",
