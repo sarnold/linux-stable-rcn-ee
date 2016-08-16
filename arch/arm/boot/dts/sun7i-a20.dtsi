@@ -714,7 +714,7 @@
 			compatible = "allwinner,sun7i-a20-sc-nmi";
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			reg = <0x01c00030 0x0c>;
+			reg = <0x01c00030 0x04>;
 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
@@ -1151,13 +1151,6 @@
 
 			spi1_cs0_pins_a: spi1_cs0@0 {
 				allwinner,pins = "PI16";
-				allwinner,function = "spi1";
-				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-			};
-
-			spi1_cs1_pins_a: spi1_cs1@0 {
-				allwinner,pins = "PI15";
 				allwinner,function = "spi1";
 				allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 				allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
