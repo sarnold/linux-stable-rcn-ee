@@ -54,7 +54,7 @@
 
 	aliases {
 		serial0 = &uart0;
-		serial1 = &uart3;
+		serial1 = &uart2;
 		serial2 = &uart7;
 	};
 
@@ -70,7 +70,23 @@
 		green {
 			label = "lamobo_r1:green:usr";
 			gpios = <&pio 7 24 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
 		};
+	};
+
+	reg_axp_ipsout: axp-ipsout {
+		compatible = "regulator-fixed";
+		regulator-name = "axp-ipsout";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+	};
+
+	reg_dram_vcc: dram-vcc {
+		compatible = "regulator-fixed";
+		regulator-name = "dram-vcc";
+		regulator-min-microvolt = <1500000>;
+		regulator-max-microvolt = <1500000>;
 	};
 
 	reg_gmac_3v3: gmac-3v3 {
@@ -84,10 +100,6 @@
 		enable-active-high;
 		gpio = <&pio 7 23 GPIO_ACTIVE_HIGH>; /* PH23 */
 	};
-};
-
-&ahci_pwr_pin_a {
-	allwinner,pins = "PB3";
 };
 
 &ahci {
@@ -117,6 +129,8 @@
 	phy-mode = "rgmii";
 	phy-supply = <&reg_gmac_3v3>;
 	status = "okay";
+
+	snps,pbl = <1>;
 
 	fixed-link {
 		speed = <1000>;
@@ -184,15 +198,33 @@
 	status = "okay";
 
 	axp209: pmic@34 {
+		compatible = "x-powers,axp209";
 		reg = <0x34>;
 		interrupt-parent = <&nmi_intc>;
 		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-controller;
+		#interrupt-cells = <1>;
+
+		acin-supply = <&reg_axp_ipsout>;
+		vin2-supply = <&reg_axp_ipsout>;
+		vin3-supply = <&reg_axp_ipsout>;
+		ldo24in-supply = <&reg_axp_ipsout>;
+		ldo3in-supply = <&reg_axp_ipsout>;
 	};
 };
+
+#include "axp209.dtsi"
 
 &i2c2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c2_pins_a>;
+	status = "okay";
+};
+
+&i2c4 {
+	/* this one goes on the Pi-style header */
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c4_pins_a>;
 	status = "okay";
 };
 
@@ -216,6 +248,10 @@
 	status = "okay";
 };
 
+&ohci1 {
+	status = "okay";
+};
+
 &otg_sram {
 	status = "okay";
 };
@@ -225,14 +261,35 @@
 		allwinner,pins = "PH4";
 		allwinner,function = "gpio_in";
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+	};
+
+	usb0_vbus_detect_pin: usb0_vbus_detect_pin@0 {
+		allwinner,pins = "PH5";
+		allwinner,function = "gpio_in";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+	};
+
+	usb0_vbus_pin_lamobo_r1: usb0_vbus_pin@0 {
+		allwinner,pins = "PB9";
+		allwinner,function = "gpio_out";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+	};
+
+	usb2_vbus_pin_lamobo_r1: usb2_vbus_pin@0 {
+		allwinner,pins = "PH3";
+		allwinner,function = "gpio_out";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 	};
 
 	mmc0_cd_pin_lamobo_r1: mmc0_cd_pin@0 {
 		allwinner,pins = "PH10";
 		allwinner,function = "gpio_in";
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 	};
 
 	gmac_power_pin_lamobo_r1: gmac_power_pin@0 {
@@ -250,24 +307,39 @@
 	};
 };
 
-#include "axp209.dtsi"
+&pwm {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm0_pins_a>;
+	status = "okay";
+};
 
 &reg_ahci_5v {
-	gpio = <&pio 1 3 GPIO_ACTIVE_HIGH>; /* PB3 */
+	status = "okay";
+};
+
+&reg_usb0_vbus {
+	status = "okay";
+};
+
+&reg_usb1_vbus {
+	status = "okay";
+};
+
+&reg_usb2_vbus {
 	status = "okay";
 };
 
 &reg_dcdc2 {
 	regulator-always-on;
-	regulator-min-microvolt = <1000000>;
-	regulator-max-microvolt = <1400000>;
+	regulator-min-microvolt = <1250000>;
+	regulator-max-microvolt = <1600000>;
 	regulator-name = "vdd-cpu";
 };
 
 &reg_dcdc3 {
 	regulator-always-on;
-	regulator-min-microvolt = <1000000>;
-	regulator-max-microvolt = <1400000>;
+	regulator-min-microvolt = <1200000>;
+	regulator-max-microvolt = <1200000>;
 	regulator-name = "vdd-int-dll";
 };
 
@@ -282,13 +354,15 @@
 	regulator-name = "avcc";
 };
 
-&reg_usb0_vbus {
-	status = "okay";
+&reg_ldo3 {
+	regulator-always-on;
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+	regulator-name = "ldo3";
 };
 
-&reg_usb2_vbus {
-	gpio = <&pio 7 12 GPIO_ACTIVE_HIGH>; /* PH12 */
-	status = "okay";
+&reg_ldo4 {
+	/* not used */
 };
 
 &spi0 {
@@ -305,11 +379,13 @@
 	status = "okay";
 };
 
-&uart3 {
+&uart2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&uart3_pins_b>;
+	pinctrl-0 = <&uart2_pins_a>;
 	status = "okay";
 };
+
+/* uart5 pins_a conflicts with spi0 pins_a */
 
 &uart7 {
 	pinctrl-names = "default";
@@ -318,23 +394,15 @@
 };
 
 &usb_otg {
-	dr_mode = "otg";
+	dr_mode = "host";
 	status = "okay";
-};
-
-&usb_power_supply {
-	status = "okay";
-};
-
-&usb2_vbus_pin_a {
-	allwinner,pins = "PH12";
 };
 
 &usbphy {
 	pinctrl-names = "default";
 	pinctrl-0 = <&usb0_id_detect_pin>;
 	usb0_id_det-gpio = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH4 */
-	usb0_vbus_power-supply = <&usb_power_supply>;
+	usb0_vbus-supply = <&reg_usb0_vbus>;
 	usb0_vbus-supply = <&reg_usb0_vbus>;
 	usb2_vbus-supply = <&reg_usb2_vbus>;
 	status = "okay";
