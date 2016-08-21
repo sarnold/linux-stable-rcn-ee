@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 Jelle de Jong <jelledejong@powercraft.nl>
+ * Changes copyright 2016 Stephen L Arnold <nerdboy@gentoo.org>
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -322,6 +323,7 @@
 };
 
 &reg_usb1_vbus {
+	gpio = <&pio 7 12 GPIO_ACTIVE_HIGH>; /* PH12 - WLB_REG_ON */
 	status = "okay";
 };
 
@@ -398,11 +400,20 @@
 	status = "okay";
 };
 
+&usb_power_supply {
+	status = "okay";
+};
+
+&usb2_vbus_pin_a {
+	allwinner,pins = "PH12";
+};
+
 &usbphy {
 	pinctrl-names = "default";
 	pinctrl-0 = <&usb0_id_detect_pin>;
 	usb0_id_det-gpio = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH4 */
-	usb0_vbus-supply = <&reg_usb0_vbus>;
+	/* note this breaks usb host connector on BPI-R1 */
+	usb0_vbus_power-supply = <&usb_power_supply>;
 	usb0_vbus-supply = <&reg_usb0_vbus>;
 	usb2_vbus-supply = <&reg_usb2_vbus>;
 	status = "okay";
