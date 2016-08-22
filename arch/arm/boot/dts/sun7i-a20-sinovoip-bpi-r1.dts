@@ -75,20 +75,20 @@
 		};
 	};
 
-	reg_axp_ipsout: axp-ipsout {
-		compatible = "regulator-fixed";
-		regulator-name = "axp-ipsout";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		regulator-always-on;
-	};
+//	reg_axp_ipsout: axp-ipsout {
+//		compatible = "regulator-fixed";
+//		regulator-name = "axp-ipsout";
+//		regulator-min-microvolt = <5000000>;
+//		regulator-max-microvolt = <5000000>;
+//		regulator-always-on;
+//	};
 
-	reg_dram_vcc: dram-vcc {
-		compatible = "regulator-fixed";
-		regulator-name = "dram-vcc";
-		regulator-min-microvolt = <1500000>;
-		regulator-max-microvolt = <1500000>;
-	};
+//	reg_dram_vcc: dram-vcc {
+//		compatible = "regulator-fixed";
+//		regulator-name = "dram-vcc";
+//		regulator-min-microvolt = <1500000>;
+//		regulator-max-microvolt = <1500000>;
+//	};
 
 	reg_gmac_3v3: gmac-3v3 {
 		compatible = "regulator-fixed";
@@ -205,20 +205,61 @@
 	status = "okay";
 
 	axp209: pmic@34 {
-		compatible = "x-powers,axp209";
 		reg = <0x34>;
 		interrupt-parent = <&nmi_intc>;
 		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
 
-		acin-supply = <&reg_axp_ipsout>;
-		vin2-supply = <&reg_axp_ipsout>;
-		vin3-supply = <&reg_axp_ipsout>;
-		ldo24in-supply = <&reg_axp_ipsout>;
-		ldo3in-supply = <&reg_axp_ipsout>;
+//		acin-supply = <&reg_axp_ipsout>;
+//		vin2-supply = <&reg_axp_ipsout>;
+//		vin3-supply = <&reg_axp_ipsout>;
+//		ldo24in-supply = <&reg_axp_ipsout>;
+//		ldo3in-supply = <&reg_axp_ipsout>;
+
+//		regulators {
+//			vdd_rtc: ldo1 {
+//				regulator-min-microvolt = <1300000>;
+//				regulator-max-microvolt = <1300000>;
+//				regulator-always-on;
+//				regulator-name = "vdd-rtc";
+//			};
+
+//			avcc: ldo2 {
+//				regulator-min-microvolt = <3000000>;
+//				regulator-max-microvolt = <3000000>;
+//				regulator-always-on;
+//				regulator-name = "avcc";
+//			};
+
+//			vcc_csi0: ldo3 {
+//				regulator-min-microvolt = <2800000>;
+//				regulator-max-microvolt = <2800000>;
+//				regulator-always-on;
+//				regulator-name = "vcc-csi0";
+//			};
+
+//			vcc_csi1: ldo4 {
+//				regulator-min-microvolt = <1250000>;
+//				regulator-max-microvolt = <3300000>;
+//				regulator-always-on;
+//				regulator-name = "vcc-csi1";
+//			};
+
+//			vdd_cpu: dcdc2 {
+//				regulator-min-microvolt = <1000000>;
+//				regulator-max-microvolt = <1400000>;
+//				regulator-always-on;
+//				regulator-name = "vdd-cpu";
+//			};
+
+//			vdd_int: dcdc3 {
+//				regulator-min-microvolt = <1000000>;
+//				regulator-max-microvolt = <1400000>;
+//				regulator-always-on;
+//				regulator-name = "vdd-int-dll";
+//			};
+//		};
 	};
 };
-
-#include "axp209.dtsi"
 
 &i2c1 {
 	pinctrl-names = "default";
@@ -353,40 +394,41 @@
 	status = "okay";
 };
 
+#include "axp209.dtsi"
+
 &reg_dcdc2 {
 	regulator-always-on;
-	regulator-min-microvolt = <1250000>;
-	regulator-max-microvolt = <1600000>;
+	regulator-min-microvolt = <1000000>;
+	regulator-max-microvolt = <1400000>;
 	regulator-name = "vdd-cpu";
 };
 
 &reg_dcdc3 {
 	regulator-always-on;
-	regulator-min-microvolt = <1200000>;
-	regulator-max-microvolt = <1200000>;
+	regulator-min-microvolt = <1000000>;
+	regulator-max-microvolt = <1400000>;
 	regulator-name = "vdd-int-dll";
 };
 
 &reg_ldo1 {
+	regulator-always-on;
+	regulator-min-microvolt = <1200000>;
+	regulator-max-microvolt = <1400000>;
 	regulator-name = "vdd-rtc";
 };
 
 &reg_ldo2 {
 	regulator-always-on;
-	regulator-min-microvolt = <3000000>;
-	regulator-max-microvolt = <3000000>;
+	regulator-min-microvolt = <2700000>;
+	regulator-max-microvolt = <3300000>;
 	regulator-name = "avcc";
 };
 
 &reg_ldo3 {
 	regulator-always-on;
-	regulator-min-microvolt = <2800000>;
-	regulator-max-microvolt = <2800000>;
-	regulator-name = "ldo3";
-};
-
-&reg_ldo4 {
-	/* not used */
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-name = "vcc-csi0";
 };
 
 &spi0 {
