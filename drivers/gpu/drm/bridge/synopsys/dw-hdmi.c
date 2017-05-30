@@ -616,7 +616,7 @@ static bool hdmi_bus_fmt_is_yuv422(unsigned int bus_format)
 	}
 }
 
-static bool hdmi_bus_fmt_is_yuv420(unsigned int bus_format)
+static bool __attribute__ ((__used__)) hdmi_bus_fmt_is_yuv420(unsigned int bus_format)
 {
 	switch (bus_format) {
 	case MEDIA_BUS_FMT_UYYVYY8_1X24:
